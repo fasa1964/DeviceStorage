@@ -2,6 +2,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "fdeviceloader.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +13,7 @@ int main(int argc, char *argv[])
     app.setOrganizationName("qt-example@devicestorage");
     app.setOrganizationDomain("qt-example@devicestorage.com");
 
-
+    qmlRegisterType<FDeviceLoader>("FDeviceLoader", 1, 0, "FDevice");
 
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
