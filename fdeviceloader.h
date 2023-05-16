@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <QColor>
 
 #include <QMap>
 #include <QVariant>
@@ -22,7 +23,11 @@ class FDeviceLoader : public QObject
 public:
     explicit FDeviceLoader(QObject *parent = nullptr);
     Q_INVOKABLE void loadDeviceMap();
-    Q_INVOKABLE void addDevice(const QVariantMap &map);
+    Q_INVOKABLE void addDevice(const QVariantMap &map, bool change);
+    Q_INVOKABLE bool deleteDevice(const QString &key);
+
+    Q_INVOKABLE QColor colorLighter(const QColor &color, int factor);
+    Q_INVOKABLE QColor getOriginalColor();
 
     // Test with QStringList for Model in qml
     Q_INVOKABLE QList<QVariantMap> getModelMap();
@@ -34,15 +39,23 @@ public:
     QImage deviceImage() const;
     void setDeviceImage(const QImage &newDeviceImage);
 
+    QColor originalColor() const;
+    void setOriginalColor(const QColor &newOriginalColor);
+
 signals:
 
     void errorOccurred(const QString &errorText);
+    void info(const QString &infoText);
+    void deviceAdded(bool status);
 
     void deviceCountChanged();
     void deviceImageChanged();
 
 private:
     QMap<QString, FDevice> deviceMap;
+
+    QColor m_originalColor;
+
 
     int m_deviceCount;
     QImage m_deviceImage;

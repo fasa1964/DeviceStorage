@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Dialogs
+import QtCore
+
 
 import FDeviceLoader 1.0
 
@@ -13,15 +15,24 @@ Window {
     title: qsTr("Device Storage")
     color: "#2e2f30"
 
+
     property int listviewwidth: 200
     property bool android: false
+    property bool itemselected: false
+    property bool deleteitem: false
+    property bool changeitem: false
 
     property int leftmarging: 15
+    property int fontsize: 12
 
     ListModel{ id: devicemodel }
 
+
+    // MessageBox
     property string messagetext: ""
     property string messagetitle: ""
+    property bool okbutton: true
+    property bool cancelbutton: false
 
     Rectangle{
         id: messagebox
@@ -40,8 +51,8 @@ Window {
             border.color: "gray"
             color: "lightgray"
 
-
             Text {
+                id: title
                 text: messagetitle
                 anchors.centerIn: parent
                 font.letterSpacing: 2
@@ -67,31 +78,61 @@ Window {
             text: messagetext
         }
 
-        Button{
-            text: "OK"
-            width: 75
+        Row{
+            spacing: 5
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             anchors.margins: 5
-            onClicked: messagebox.visible = false
+            Button{
+                text: "Cancel"
+                width: 75
+                visible: cancelbutton
+                onClicked: messagebox.visible = false
+            }
+            Button{
+                text: "OK"
+                width: 75
+                visible: okbutton
+                onClicked: {
+
+                    messagebox.visible = false
+                    if(deleteitem){
+                        deleteitem = false
+                        var key = devicemodel.get( listview.currentIndex).name
+                        if( device.deleteDevice( key ) ){
+                            updateListView()
+                           // showMessageBox("Delete", "Item has been deleted!", true, false)
+                        }
+
+
+                        //devicemodel.remove(devicemodel.currentIndex)
+                    }
+
+                }
+            }
         }
-
-
     }
 
-    function showMessageBox(title, text){
+    function showMessageBox(title, text, ok, cancel){
 
         messagetext = text
         messagetitle = title
         messagebox.visible = true
-
-
+        okbutton = ok
+        cancelbutton = cancel
     }
 
     // C++ Class FDeviceLoader
     FDevice{
         id: device
-        onErrorOccurred: (errorText) => { showMessageBox("ERROR", errorText) }
+        onErrorOccurred: (errorText) => { showMessageBox("ERROR", errorText, true, false) }
+        onInfo: (infoText) => { showMessageBox("Info", infoText, true, false)    }
+        onDeviceAdded: {
+
+            addrect.visible = false
+            updateListView()
+            changeitem = false
+        }
     }
 
     MenuBar{
@@ -100,9 +141,12 @@ Window {
             title: qsTr("App")
             MenuBarItem{
                 text: qsTr("&Info")
+                icon.source: "qrc:/png/info.png"
+
             }
             MenuBarItem{
                 text: qsTr("&Close")
+                icon.source: "qrc:/png/close.png"
                 onTriggered: Qt.quit()
             }
         }
@@ -110,10 +154,21 @@ Window {
             title: qsTr("Device")
             MenuBarItem{
                 text: qsTr("&Add")
+                icon.source: "qrc:/png/add.png"
                 onTriggered: addrect.visible = true
+                enabled:  addrect.visible ? false : true
             }
             MenuBarItem{
                 text: qsTr("&Delete")
+                icon.source: "qrc:/png/garbage.png"
+                enabled: itemselected ? true : false
+                onTriggered: {
+
+                    var itemname = devicemodel.get( listview.currentIndex).name
+                    deleteitem = true
+                    var text = "Do you want delete Item: " + itemname
+                    showMessageBox("Delete",text, true, true )
+                }
 
             }
         }
@@ -131,8 +186,39 @@ Window {
         var date = new Date
         var obj = { "date":date, "name":nameinput.text, "description":descinput.text,
         "url":urlinput.text, "pdf":pdfinput.text, "count":countinput.value,
-        "price":priceinput.realValue, "image":image.source}
-        device.addDevice(obj)
+        "price":priceinput.realValue, "image":image.source, "imagepath":image.source}
+        device.addDevice(obj, changeitem)
+    }
+
+    function updateListView(){
+
+        devicemodel.clear()
+        var list = device.getModelMap();
+
+        for(var i = 0; i < device.deviceCount; i++){
+
+            devicemodel.insert(i,{"name":list[i].name, "date":list[i].date, "description":list[i].description,
+                              "pdf":list[i].pdf, "count":list[i].count, "price":list[i].price, "url":list[i].url,
+                               "image":list[i].image, "imagepath":list[i].imagepath})
+        }
+
+        if( device.deviceCount > 0 )
+             listview.currentIndex = 0
+
+    }
+
+    function setDeviceForChange(){
+
+        changeitem = true
+
+        // Copy datas from DeviceWindow to AddDeviceWindow
+        nameinput.text = devicemodel.get(listview.currentIndex).name
+        descinput.text = devicemodel.get(listview.currentIndex).description
+        urlinput.text = devicemodel.get(listview.currentIndex).url
+        pdfinput.text = devicemodel.get(listview.currentIndex).pdf
+        countinput.value = devicemodel.get(listview.currentIndex).count
+        priceinput.value = devicemodel.get(listview.currentIndex).price * 100
+        image.source = devicemodel.get(listview.currentIndex).imagepath
     }
 
     Button{
@@ -220,6 +306,7 @@ Window {
                     anchors.fill: parent
                     onClicked: {
                         listview.currentIndex = index
+                        itemselected = true
 
                         // Test to load image
                         //deviceimage.image = devicemodel.get(listview.currentIndex).image
@@ -246,13 +333,27 @@ Window {
         border.color: "gray"
         color: "transparent"
 
+        // Button for open device to edit
+        Button{
+            text: ""
+            anchors.right: parent.right
+            icon.source: "qrc:/png/edit.png"
+            onClicked: {
+
+                setDeviceForChange()
+                addrect.visible = true
+
+
+            }
+        }
+
         Grid{
             id: grid
             width: devicerect.width - 20
             height: devicerect.height - 40
             columns: 2
             columnSpacing: 10
-            rows: 8
+            rows: 9
             rowSpacing: 5
 
             x: 10; y:30
@@ -261,10 +362,12 @@ Window {
                 Text {
                     text: qsTr("Index:")
                     color: "gray"
+                    font.pointSize: fontsize
                 }
                 Text {
                     text: listview.currentIndex
                     color: "white"
+                    font.pointSize: fontsize
                 }
             }
 
@@ -273,79 +376,104 @@ Window {
                 Text {
                     text: "Date: "
                     color: "gray"
+                    font.pointSize: fontsize
                 }
                 Text {
-                    text: devicemodel.get(listview.currentIndex).date.toLocaleDateString(Qt.locale("de_DE"))
+                    text: listview.currentIndex >= 0 ?  devicemodel.get(listview.currentIndex).date.toLocaleDateString(Qt.locale("de_DE")) : " "
                     color: "white"
+                    font.pointSize: fontsize
                 }
             }
 
             Text {
                 text: qsTr("Name:")
                 color: "gray"
+                font.pointSize: fontsize
             }
             Text {
-                text: devicemodel.get(listview.currentIndex).name
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).name : " "
                 color: "#00C853"
+                font.pointSize: fontsize
             }
             Text {
                 id: tdes
                 text: qsTr("Description:")
                 color: "gray"
+                font.pointSize: fontsize
             }
             TextInput {
                 id: dinput
                 width: grid.width - tdes.width - 10
-                text: devicemodel.get(listview.currentIndex).description
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).description : " "
                 color: "#F57F17"
+                font.pointSize: fontsize
                 wrapMode: Text.WordWrap
 
             }
             Text {
                 text: qsTr("URL:")
                 color: "gray"
+                font.pointSize: fontsize
             }
             Text {
                 id: urltext
-                text: devicemodel.get(listview.currentIndex).url
+                width: grid.width - tdes.width - 10
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).url : " "
                 color: urltext.text === "X" ? "red" : "#2979FF"
+                font.pointSize: fontsize
+                wrapMode: Text.WordWrap
+
                 MouseArea{
                     anchors.fill: parent
+                    hoverEnabled: true
+                    onEntered: { urltext.color = device.colorLighter( urltext.color, 150 ) }
+                    onExited: {  urltext.color = device.getOriginalColor()  }
                     onClicked: Qt.openUrlExternally(urltext.text)
                 }
             }
             Text {
                 text: qsTr("PDF:")
                 color: "gray"
+                font.pointSize: fontsize
             }
             Text {
                 id: pdfpath
-                text: devicemodel.get(listview.currentIndex).pdf
-                color: pdfpath.text === "X" ? "red" : "#2979FF"
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).pdf : " "
+                color: pdfpath.text === "X" ? "red" : "#E91E63"
+                font.pointSize: fontsize
                 MouseArea{
                     anchors.fill: parent
-                    onClicked:{ }
+                    hoverEnabled: true
+                    onEntered: { pdfpath.color = device.colorLighter( pdfpath.color, 150 ) }
+                    onExited: {  pdfpath.color = device.getOriginalColor()  }
+                    onClicked:{  Qt.openUrlExternally(pdfpath.text) }
+
                 }
             }
             Text {
                 text: qsTr("Count:")
                 color: "gray"
+                font.pointSize: fontsize
             }
             Text {
-                text: devicemodel.get(listview.currentIndex).count
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).count : " "
                 color: "white"
+                font.pointSize: fontsize
             }
             Text {
                 text: qsTr("Costs:")
                 color: "gray"
+                font.pointSize: fontsize
             }
             Text {
-                text: devicemodel.get(listview.currentIndex).price +  " €"
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).price +  " €" : " €"
                 color: "white"
+                font.pointSize: fontsize
             }
             Text {
                 text: qsTr("Image:")
                 color: "gray"
+                font.pointSize: fontsize
             }
 
             Rectangle{
@@ -357,15 +485,26 @@ Window {
 
                 Image{
                     id: deviceimage
-                    //source: device.deviceImage
+                    source: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).imagepath : ""
                     anchors.fill: parent
                     fillMode: Image.PreserveAspectFit
 
                 }
             }
+            Text {
+                text: "Path:"
+                color: "lightgray"
+                font.pointSize: fontsize
+
+            }
+            Text {
+                id: imagesource
+                text: listview.currentIndex >= 0 ? devicemodel.get(listview.currentIndex).imagepath : "/"
+                color: "white"
+                font.pointSize: fontsize
+            }
         }
     }
-
 
     // Add Device Window
     Rectangle{
@@ -373,7 +512,7 @@ Window {
         width: parent.width - 100
         height: parent.height - 100
         anchors.centerIn: parent
-        visible: false
+        visible: true
         color: "beige"
 
         MouseArea{ anchors.fill: parent }
@@ -387,12 +526,15 @@ Window {
                 id: nameinput
                 width: parent.width - leftmarging * 2
                 placeholderText: "Entere name"
+                font.pointSize: fontsize
                 color: "#1565C0"
+                onEditingFinished: { acceptbutton.enabled = true }
 
             }
             TextArea{
                 id: descinput
                 width: parent.width - leftmarging * 2
+                font.pointSize: fontsize
                 wrapMode: Text.WordWrap
                 placeholderText: "Entere description"
                 color: "#1565C0"
@@ -400,27 +542,44 @@ Window {
             TextArea{
                 id: urlinput
                 width: parent.width - leftmarging * 2
+                font.pointSize: fontsize
                 placeholderText: "Entere url"
                 color: "#1565C0"
             }
             TextArea{
                 id: pdfinput
                 width: parent.width - leftmarging * 2
+                font.pointSize: fontsize
                 placeholderText: "Entere path of pdf"
                 color: "#1565C0"
+
+                // For droping pdf file into the area
+                DropArea{
+                    anchors.fill: parent
+                    onDropped: (drop)=> { pdfinput.text = drop.text }
+                }
+
             }
             Row{
                 spacing: 5
-                Text { text: qsTr("Count:"); color: "gray" }
-                SpinBox{ id: countinput; from: 1; to:9999 }
+                Text { text: qsTr("Count:"); color: "gray"; font.pointSize: fontsize }
+                SpinBox{
+                    id: countinput;
+                    height: android ? 38 : 24
+                    from: 1; to:9999
+                    editable: true
+                    font.pointSize: fontsize
+                }
             }
             Row{
                 spacing: 10
-                Text { text: qsTr("Price:"); color: "gray" }
+                Text { text: qsTr("Price:"); color: "gray"; font.pointSize: fontsize }
                 SpinBox{
                     id: priceinput;
+                    height: android ? 38 : 24
                     from: 0; to:9999;
-
+                    editable: true
+                    font.pointSize: fontsize
                     property int decimals: 2
                     property real realValue: value / 100
 
@@ -442,7 +601,7 @@ Window {
                 id: row
                 width: parent.width
                 spacing: 10
-                Text {id: ti; text: qsTr("Image:"); color: "gray" }
+                Text {id: ti; text: qsTr("Image:"); color: "gray"; font.pointSize: fontsize }
 
                 // The Image - Rectangle
                 Rectangle{
@@ -464,7 +623,6 @@ Window {
                     }
                 }
             }
-
         }
 
         Row{
@@ -474,40 +632,41 @@ Window {
             spacing: 10
             Button{
                 text: "Cancel"
+                height: android ? 38 : 24
+                width: android ? 140 : 77
                 onClicked: addrect.visible = false
             }
             Button{
+                id: acceptbutton
+                height: android ? 38 : 24
+                width: android ? 140 : 77
                 text: "Accept"
-                onClicked: addDevice()
+                enabled: false
+                onClicked: { addrect.visible = false; addDevice() }
+
             }
         }
     }
+
+    Settings{
+        id: settings
+        property alias width: root.width
+        property alias height: root.height
+        property alias posx: root.x
+        property alias posy: root.y
+
+    }
+
 
     Component.onCompleted: {
 
         if(Qt.platform.os === "android")
             android = true
 
+
         // Calls the C++ function
         device.loadDeviceMap()
-
-        var list = device.getModelMap();
-
-        for(var i = 0; i < device.deviceCount; i++){
-//            console.log(list[i].name)
-//            console.log(list[i].image)
-
-
-            devicemodel.insert(i,{"name":list[i].name, "date":list[i].date, "description":list[i].description,
-                              "pdf":list[i].pdf, "count":list[i].count, "price":list[i].price, "url":list[i].url,
-                               "image":list[i].image})
-        }
-
-        listview.currentIndex = 0
-        //deviceimage = device.deviceImage
-
-        showMessageBox("Info", "Started")
-
+        updateListView()
     }
 
 }

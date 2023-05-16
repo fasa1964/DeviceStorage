@@ -33,6 +33,7 @@ public:
         out << dat.image();
         out << dat.pdf();
         out << dat.date();
+        out << dat.imagePath();
 
 
         return out;
@@ -48,6 +49,7 @@ public:
         in >> dat.m_image;
         in >> dat.m_pdf;
         in >> dat.m_date;
+        in >> dat.m_imagePath;
 
         return in;
     }
@@ -78,6 +80,9 @@ public:
     QDate date() const;
     void setDate(const QDate &newDate);
 
+    QString imagePath() const;
+    void setImagePath(const QString &newImagePath);
+
 private:
 
     QString m_name;             // Name of device
@@ -86,6 +91,7 @@ private:
     double m_costs;             // in €
     QUrl m_url;                 // Url of device
     QImage m_image;             // Image of device
+    QString m_imagePath;        // Path of Image
     QString m_pdf;              // Path of pdf
     QDate m_date;               // Date of constructed
 

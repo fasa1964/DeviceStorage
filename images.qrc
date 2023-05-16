@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>png/add.png</file>
+        <file>png/close.png</file>
+        <file>png/edit.png</file>
+        <file>png/garbage.png</file>
+        <file>png/ok.png</file>
+        <file>png/save.png</file>
+        <file>png/settings_spin.png</file>
+        <file>png/settings_wheel.png</file>
+        <file>png/info.png</file>
+    </qresource>
+</RCC>

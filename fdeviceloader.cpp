@@ -5,7 +5,7 @@
 #include <QDataStream>
 #include <QImage>
 #include <QPdfWriter>
-
+#include <QScreen>
 
 
 #include <QDebug>
@@ -21,11 +21,14 @@ void FDeviceLoader::loadDeviceMap()
     loadDevice();
 }
 
-void FDeviceLoader::addDevice(const QVariantMap &map)
+void FDeviceLoader::addDevice(const QVariantMap &map, bool change)
 {
     QString deviceName = map.value("name").toString();
 
-    if( deviceMap.contains( deviceName) )
+    if(deviceName.isEmpty())
+        return;
+
+    if( !change && deviceMap.contains( deviceName) )
         return;
 
     // Create new device
@@ -37,6 +40,7 @@ void FDeviceLoader::addDevice(const QVariantMap &map)
     device.setPdf(  map.value("pdf").toString() );
     device.setCount(  map.value("count").toInt() );
     device.setCosts(  map.value("price").toDouble() );
+    device.setImagePath( map.value("imagepath").toString() );
 
 
     // Create image for device
@@ -46,10 +50,13 @@ void FDeviceLoader::addDevice(const QVariantMap &map)
 
         QString imagefile = map.value("image").toString().split("///").last();
 
+        //device.setImagePath( imagefile ); // Path of image
+
         if(image.load(imagefile)){
             device.setImage(image);
         }else{
             emit errorOccurred(tr("Could not create Image!"));
+            return;
         }
     }
     //!------------------------------------------------
@@ -60,7 +67,37 @@ void FDeviceLoader::addDevice(const QVariantMap &map)
 
     setDeviceCount( deviceMap.size() );
 
+    emit deviceAdded(true);
+
 }
+
+bool FDeviceLoader::deleteDevice(const QString &key)
+{
+    bool status = false;
+    if(!deviceMap.contains(key))
+        return status;
+
+    if(deviceMap.remove(key) == 1){
+        status = true;
+        emit info("Item: " + key + " has been deleted!");
+    }
+
+    setDeviceCount( deviceMap.size() );
+    saveDevice();
+    return status;
+}
+
+QColor FDeviceLoader::colorLighter(const QColor &color, int factor)
+{
+    setOriginalColor(color);
+    return color.lighter(factor);
+}
+
+QColor FDeviceLoader::getOriginalColor()
+{
+    return originalColor();
+}
+
 
 QList<QVariantMap> FDeviceLoader::getModelMap()
 {
@@ -107,6 +144,16 @@ void FDeviceLoader::setDeviceImage(const QImage &newDeviceImage)
     emit deviceImageChanged();
 }
 
+QColor FDeviceLoader::originalColor() const
+{
+    return m_originalColor;
+}
+
+void FDeviceLoader::setOriginalColor(const QColor &newOriginalColor)
+{
+    m_originalColor = newOriginalColor;
+}
+
 QVariantMap FDeviceLoader::toVariantMap(const FDevice &device)
 {
     QVariantMap map;
@@ -119,6 +166,7 @@ QVariantMap FDeviceLoader::toVariantMap(const FDevice &device)
     map.insert("url", device.url().isEmpty() ? QUrl("X") : device.url() );
     map.insert("count", device.count());
     map.insert("price", device.costs());
+    map.insert("imagepath", device.imagePath());
 
     // Test for diplay image in qml
     setDeviceImage(device.image());

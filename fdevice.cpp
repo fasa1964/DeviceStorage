@@ -81,3 +81,13 @@ void FDevice::setDate(const QDate &newDate)
 {
     m_date = newDate;
 }
+
+QString FDevice::imagePath() const
+{
+    return m_imagePath;
+}
+
+void FDevice::setImagePath(const QString &newImagePath)
+{
+    m_imagePath = newImagePath;
+}
