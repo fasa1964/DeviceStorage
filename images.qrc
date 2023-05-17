@@ -9,5 +9,9 @@
         <file>png/settings_spin.png</file>
         <file>png/settings_wheel.png</file>
         <file>png/info.png</file>
+        <file>png/previous.png</file>
+        <file>png/next.png</file>
+        <file>png/storage.png</file>
+        <file>icon/storage.ico</file>
     </qresource>
 </RCC>

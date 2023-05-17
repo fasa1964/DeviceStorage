@@ -1,6 +1,7 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QIcon>
 
 #include "fdeviceloader.h"
 
@@ -12,6 +13,7 @@ int main(int argc, char *argv[])
     app.setApplicationVersion("1.0");
     app.setOrganizationName("qt-example@devicestorage");
     app.setOrganizationDomain("qt-example@devicestorage.com");
+    app.setWindowIcon(QIcon(":/icon/storage.ico"));
 
     qmlRegisterType<FDeviceLoader>("FDeviceLoader", 1, 0, "FDevice");
 

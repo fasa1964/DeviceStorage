@@ -29,6 +29,7 @@ Window {
 
 
     // MessageBox
+    // ---------------------------------------------
     property string messagetext: ""
     property string messagetitle: ""
     property bool okbutton: true
@@ -121,20 +122,28 @@ Window {
         okbutton = ok
         cancelbutton = cancel
     }
+    // !--------------------------------------------
 
     // C++ Class FDeviceLoader
     FDevice{
         id: device
         onErrorOccurred: (errorText) => { showMessageBox("ERROR", errorText, true, false) }
         onInfo: (infoText) => { showMessageBox("Info", infoText, true, false)    }
-        onDeviceAdded: {
+        onDeviceAdded: (status) => {
 
-            addrect.visible = false
-            updateListView()
-            changeitem = false
+            if(status){
+                addrect.visible = false
+                updateListView()
+                changeitem = false
+                clearForm()
+            }else{
+                showMessageBox("Error", qsTr("Could not save device!"), true, false)
+            }
         }
     }
 
+    // Menu
+    // ---------------------------------------------
     MenuBar{
         id: menubar
         Menu{
@@ -155,7 +164,7 @@ Window {
             MenuBarItem{
                 text: qsTr("&Add")
                 icon.source: "qrc:/png/add.png"
-                onTriggered: addrect.visible = true
+                onTriggered: { addrect.visible = true; changeitem = false; clearForm() }
                 enabled:  addrect.visible ? false : true
             }
             MenuBarItem{
@@ -173,6 +182,7 @@ Window {
             }
         }
     }
+    //!----------------------------------------------
 
     function animateListview(){
 
@@ -221,6 +231,21 @@ Window {
         image.source = devicemodel.get(listview.currentIndex).imagepath
     }
 
+    function clearForm(){
+
+
+        nameinput.text = ""
+        descinput.text = ""
+        urlinput.text = ""
+        pdfinput.text = ""
+        countinput.value = 1
+        priceinput.value = 0.0
+        image.source = ""
+    }
+
+
+    // Button to open ListView
+    // --------------------------------------------------
     Button{
         id: showbutton
         anchors.top: menubar.bottom
@@ -231,8 +256,10 @@ Window {
         onClicked: { showbutton.visible = false; listrect.width = listviewwidth  }
         visible: false
     }
+    // !-------------------------------------------------
 
     // Device List
+    // --------------------------------------------------
     Rectangle{
         id: listrect
         x: 0
@@ -322,8 +349,10 @@ Window {
 
         }
     }
+    // !-------------------------------------------------
 
     // Decice Information Window
+    // --------------------------------------------------
     Rectangle{
         id: devicerect
         width: parent.width - listrect.width
@@ -335,6 +364,7 @@ Window {
 
         // Button for open device to edit
         Button{
+            id: editbutton
             text: ""
             anchors.right: parent.right
             icon.source: "qrc:/png/edit.png"
@@ -346,6 +376,26 @@ Window {
 
             }
         }
+
+        // Next device button
+        Button{
+            id: nextbutton
+            anchors.right: editbutton.left
+            anchors.rightMargin: 20
+            icon.source: "qrc:/png/next.png"
+            enabled: listview.currentIndex >= listview.count-1 ? false : true
+            onClicked: { listview.currentIndex++ }
+        }
+        Button{
+            id: previousbutton
+            anchors.right: nextbutton.left
+            anchors.rightMargin: 5
+            icon.source: "qrc:/png/previous.png"
+            enabled: listview.currentIndex <= 0 ? false : true
+            onClicked: { listview.currentIndex-- }
+        }
+
+
 
         Grid{
             id: grid
@@ -505,14 +555,16 @@ Window {
             }
         }
     }
+    // !-------------------------------------------------
 
     // Add Device Window
+    // --------------------------------------------------
     Rectangle{
         id: addrect
         width: parent.width - 100
         height: parent.height - 100
         anchors.centerIn: parent
-        visible: true
+        visible: false
         color: "beige"
 
         MouseArea{ anchors.fill: parent }
@@ -647,6 +699,7 @@ Window {
             }
         }
     }
+    // !-------------------------------------------------
 
     Settings{
         id: settings

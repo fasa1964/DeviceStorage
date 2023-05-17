@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Core Gui Widgets QuickControls2)
 
+# on windows set app icon
+set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/appicon.rc")
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -16,7 +18,7 @@ qt_add_executable(appDeviceStorage
     fdevice.h fdevice.cpp
     fdeviceloader.h fdeviceloader.cpp
     images.qrc
-
+    ${app_icon_resource_windows}
 )
 
 qt_add_qml_module(appDeviceStorage
