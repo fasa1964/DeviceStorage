@@ -17,6 +17,7 @@ class FDeviceLoader : public QObject
     QML_ELEMENT
 
     Q_PROPERTY(int deviceCount READ deviceCount WRITE setDeviceCount NOTIFY deviceCountChanged)
+    Q_PROPERTY(double totalCost READ totalCost WRITE setTotalCost NOTIFY totalCostChanged)
     Q_PROPERTY(QImage deviceImage READ deviceImage WRITE setDeviceImage NOTIFY deviceImageChanged)
 
 
@@ -42,6 +43,9 @@ public:
     QColor originalColor() const;
     void setOriginalColor(const QColor &newOriginalColor);
 
+    double totalCost() const;
+    void setTotalCost(double newTotalCost);
+
 signals:
 
     void errorOccurred(const QString &errorText);
@@ -49,15 +53,17 @@ signals:
     void deviceAdded(bool status);
 
     void deviceCountChanged();
+    void totalCostChanged();
     void deviceImageChanged();
 
 private:
     QMap<QString, FDevice> deviceMap;
 
     QColor m_originalColor;
-
+    double calculate();
 
     int m_deviceCount;
+    double m_totalCost;
     QImage m_deviceImage;
 
     QVariantMap toVariantMap(const FDevice &device);

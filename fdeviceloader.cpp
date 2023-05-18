@@ -19,6 +19,7 @@ FDeviceLoader::FDeviceLoader(QObject *parent)
 void FDeviceLoader::loadDeviceMap()
 {
     loadDevice();
+    setTotalCost( calculate() );
 }
 
 void FDeviceLoader::addDevice(const QVariantMap &map, bool change)
@@ -66,6 +67,7 @@ void FDeviceLoader::addDevice(const QVariantMap &map, bool change)
     saveDevice();
 
     setDeviceCount( deviceMap.size() );
+    setTotalCost( calculate() );
 
     emit deviceAdded(true);
 
@@ -152,6 +154,38 @@ QColor FDeviceLoader::originalColor() const
 void FDeviceLoader::setOriginalColor(const QColor &newOriginalColor)
 {
     m_originalColor = newOriginalColor;
+}
+
+double FDeviceLoader::totalCost() const
+{
+    return m_totalCost;
+}
+
+void FDeviceLoader::setTotalCost(double newTotalCost)
+{
+    if (qFuzzyCompare(m_totalCost, newTotalCost))
+        return;
+    m_totalCost = newTotalCost;
+    emit totalCostChanged();
+}
+
+double FDeviceLoader::calculate()
+{
+    double value = 0.0;
+    QMapIterator<QString, FDevice> it(deviceMap);
+    while (it.hasNext()) {
+        it.next();
+
+        FDevice device = it.value();
+
+        int count = device.count();
+        double pr = device.costs();
+
+        double price = count * pr;
+        value += price;
+    }
+
+    return value;
 }
 
 QVariantMap FDeviceLoader::toVariantMap(const FDevice &device)

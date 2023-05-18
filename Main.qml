@@ -296,6 +296,7 @@ Window {
                     anchors.verticalCenter: headerrect.verticalC
                 }
 
+                // Button to open ListView
                 Button{
                     id: viewbutton
                     anchors.right: headerrect.right
@@ -306,6 +307,22 @@ Window {
                     onClicked: animateListview()
                 }
 
+            }
+
+            footerPositioning: ListView.OverlayFooter
+            footer: Rectangle{
+                id: footerrect
+                width: listview.width
+                height: 30
+                color: "#2e2f30"
+                border.color: "white"
+                Text {
+                    x: 5
+                    text: qsTr("Total: ") + device.totalCost.toFixed(2) + " €"
+                    color: "white"
+                    font.pointSize: fontsize
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
             delegate: Rectangle{
