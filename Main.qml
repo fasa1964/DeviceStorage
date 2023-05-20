@@ -6,6 +6,7 @@ import QtCore
 
 
 import FDeviceLoader 1.0
+import FDeviceNetwork 1.0
 
 Window {
     id: root
@@ -14,7 +15,6 @@ Window {
     visible: true
     title: qsTr("Device Storage")
     color: "#2e2f30"
-
 
     property int listviewwidth: 200
     property bool android: false
@@ -26,7 +26,6 @@ Window {
     property int fontsize: 12
 
     ListModel{ id: devicemodel }
-
 
     // MessageBox
     // ---------------------------------------------
@@ -59,7 +58,6 @@ Window {
                 font.letterSpacing: 2
             }
 
-
             MouseArea{
                 id: dragArea
                 anchors.fill: parent
@@ -67,7 +65,6 @@ Window {
                 drag.target: messagebox
                 drag.axis: Drag.XAndYAxis
             }
-
         }
 
         // Text
@@ -102,13 +99,8 @@ Window {
                         var key = devicemodel.get( listview.currentIndex).name
                         if( device.deleteDevice( key ) ){
                             updateListView()
-                           // showMessageBox("Delete", "Item has been deleted!", true, false)
                         }
-
-
-                        //devicemodel.remove(devicemodel.currentIndex)
                     }
-
                 }
             }
         }
@@ -123,6 +115,19 @@ Window {
         cancelbutton = cancel
     }
     // !--------------------------------------------
+
+    // Open Dialog
+    // ---------------------------------------------
+    FileDialog {
+           id: fileDialog
+           currentFolder: StandardPaths.standardLocations(StandardPaths.DownloadLocation)[0]
+           onAccepted: {
+               device.loadDeviceDatas( currentFile )
+               updateListView()
+           }
+       }
+    // !--------------------------------------------
+
 
     // C++ Class FDeviceLoader
     FDevice{
@@ -141,6 +146,13 @@ Window {
             }
         }
     }
+
+    FNetwork{
+        id: network
+        onNetworkError: (errorText) => { showMessageBox("Error", errorText, true , false)  }
+        onNetworkFinished: (infoText) => { showMessageBox("Network", infoText, true , false) }
+    }
+
 
     // Menu
     // ---------------------------------------------
@@ -178,7 +190,26 @@ Window {
                     var text = "Do you want delete Item: " + itemname
                     showMessageBox("Delete",text, true, true )
                 }
+            }
+        }
+        Menu{
+            title: qsTr("&File")
+            MenuBarItem{
+                text: qsTr("&Open")
+                icon.source: "qrc:/png/open.png"
+                onTriggered: {
 
+                    fileDialog.open()
+                }
+            }
+            MenuBarItem{
+                text: qsTr("&Find")
+                icon.source: "qrc:/png/search.png"
+            }
+            MenuBarItem{
+                text: qsTr("&Download")
+                icon.source: "qrc:/png/download.png"
+                onTriggered: network.tryNetwork()
             }
         }
     }
@@ -233,7 +264,6 @@ Window {
 
     function clearForm(){
 
-
         nameinput.text = ""
         descinput.text = ""
         urlinput.text = ""
@@ -242,7 +272,6 @@ Window {
         priceinput.value = 0.0
         image.source = ""
     }
-
 
     // Button to open ListView
     // --------------------------------------------------
@@ -334,6 +363,8 @@ Window {
                 color: "transparent"
                 Row{
                     spacing: 5
+                    x:5
+                    anchors.verticalCenter: parent.verticalCenter
                     Text {
                         text: index
                         color: wrapper.ListView.isCurrentItem ? "red" : "white"

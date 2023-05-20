@@ -4,6 +4,7 @@
 #include <QIcon>
 
 #include "fdeviceloader.h"
+#include "fdevicenetwork.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +17,7 @@ int main(int argc, char *argv[])
     app.setWindowIcon(QIcon(":/icon/storage.ico"));
 
     qmlRegisterType<FDeviceLoader>("FDeviceLoader", 1, 0, "FDevice");
+    qmlRegisterType<FDeviceNetwork>("FDeviceNetwork", 1, 0, "FNetwork");
 
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,

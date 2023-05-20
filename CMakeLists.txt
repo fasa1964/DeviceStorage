@@ -6,7 +6,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Core Gui Widgets QuickControls2)
+
+# Android setting app icon
+if(ANDROID)
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android" CACHE INTERNAL "")
+endif()
+
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Core Gui Widgets QuickControls2 Network)
 
 # on windows set app icon
 set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/appicon.rc")
@@ -17,6 +23,7 @@ qt_add_executable(appDeviceStorage
     main.cpp
     fdevice.h fdevice.cpp
     fdeviceloader.h fdeviceloader.cpp
+    fdevicenetwork.h fdevicenetwork.cpp
     images.qrc
     ${app_icon_resource_windows}
 )
@@ -33,6 +40,7 @@ set_target_properties(appDeviceStorage PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
+    QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
 )
 
 target_link_libraries(appDeviceStorage
@@ -41,6 +49,7 @@ target_link_libraries(appDeviceStorage
     PRIVATE Qt6::Gui
     PRIVATE Qt6::Widgets
     PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::Network
 
 )
 

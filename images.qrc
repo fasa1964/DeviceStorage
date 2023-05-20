@@ -13,5 +13,8 @@
         <file>png/next.png</file>
         <file>png/storage.png</file>
         <file>icon/storage.ico</file>
+        <file>png/open.png</file>
+        <file>png/search.png</file>
+        <file>png/download.png</file>
     </qresource>
 </RCC>

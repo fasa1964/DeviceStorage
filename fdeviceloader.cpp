@@ -6,6 +6,7 @@
 #include <QImage>
 #include <QPdfWriter>
 #include <QScreen>
+#include <QDir>
 
 
 #include <QDebug>
@@ -14,11 +15,15 @@ FDeviceLoader::FDeviceLoader(QObject *parent)
     : QObject{parent}
 {
     setDeviceCount(0);
+    setCurrentFilename("");
+    setCurrentPath("");
 }
 
 void FDeviceLoader::loadDeviceMap()
 {
-    loadDevice();
+    QString fn = QDir::currentPath() + "/" + "device.dat";
+    if(!loadDevice(fn))
+        emit errorOccurred("Could not load device data's!");
     setTotalCost( calculate() );
 }
 
@@ -118,6 +123,26 @@ QList<QVariantMap> FDeviceLoader::getModelMap()
     return vamp;
 }
 
+bool FDeviceLoader::loadDeviceDatas(const QUrl &url)
+{
+    bool status = false;
+
+    QString name = url.fileName();
+    QString path = url.adjusted(QUrl::RemoveFilename).toLocalFile();  //path(QUrl::FullyEncoded);
+
+    // Set the applications current working directoy
+    QDir::setCurrent(path);
+
+    setCurrentPath(path);
+    setCurrentFilename(name);
+
+    QString fn = currentPath()+currentFilename();
+    status = loadDevice(fn);
+
+
+    return status;
+}
+
 
 // QML Properties
 int FDeviceLoader::deviceCount() const
@@ -188,6 +213,26 @@ double FDeviceLoader::calculate()
     return value;
 }
 
+QString FDeviceLoader::currentPath() const
+{
+    return m_currentPath;
+}
+
+void FDeviceLoader::setCurrentPath(const QString &newCurrentPath)
+{
+    m_currentPath = newCurrentPath;
+}
+
+QString FDeviceLoader::currentFilename() const
+{
+    return m_currentFilename;
+}
+
+void FDeviceLoader::setCurrentFilename(const QString &newCurrentFilename)
+{
+    m_currentFilename = newCurrentFilename;
+}
+
 QVariantMap FDeviceLoader::toVariantMap(const FDevice &device)
 {
     QVariantMap map;
@@ -210,14 +255,14 @@ QVariantMap FDeviceLoader::toVariantMap(const FDevice &device)
 //!-------------------------------------------
 
 
-void FDeviceLoader::loadDevice()
+bool FDeviceLoader::loadDevice(const QString &filename)
 {
-    QFile file("device.dat");
+    QFile file(filename);
     if(!file.exists())
-        return;
+        return false;
 
     if(!file.open(QIODevice::ReadOnly)){
-        return;
+        return false;
     }
 
     QDataStream in(&file);
@@ -232,8 +277,8 @@ void FDeviceLoader::loadDevice()
     }
 
     file.close();
-
     setDeviceCount(deviceMap.size());
+    return true;
 }
 
 void FDeviceLoader::saveDevice()

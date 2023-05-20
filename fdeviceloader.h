@@ -34,6 +34,11 @@ public:
     Q_INVOKABLE QList<QVariantMap> getModelMap();
 
 
+    // For loading file
+    Q_INVOKABLE bool loadDeviceDatas(const QUrl &url);
+
+
+
     int deviceCount() const;
     void setDeviceCount(int newDeviceCount);
 
@@ -45,6 +50,12 @@ public:
 
     double totalCost() const;
     void setTotalCost(double newTotalCost);
+
+    QString currentFilename() const;
+    void setCurrentFilename(const QString &newCurrentFilename);
+
+    QString currentPath() const;
+    void setCurrentPath(const QString &newCurrentPath);
 
 signals:
 
@@ -62,13 +73,18 @@ private:
     QColor m_originalColor;
     double calculate();
 
+    // For loading device data's
+    QString m_currentFilename;
+    QString m_currentPath;
+
+
     int m_deviceCount;
     double m_totalCost;
     QImage m_deviceImage;
 
     QVariantMap toVariantMap(const FDevice &device);
 
-    void loadDevice();
+    bool loadDevice(const QString &filename);
     void saveDevice();
 
 
