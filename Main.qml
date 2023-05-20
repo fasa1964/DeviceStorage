@@ -147,6 +147,7 @@ Window {
         }
     }
 
+    // C++ Class FDeviceNetwork
     FNetwork{
         id: network
         onNetworkError: (errorText) => { showMessageBox("Error", errorText, true , false)  }
@@ -163,6 +164,7 @@ Window {
             MenuBarItem{
                 text: qsTr("&Info")
                 icon.source: "qrc:/png/info.png"
+                onTriggered: { inforect.visible = true  }
 
             }
             MenuBarItem{
@@ -748,6 +750,104 @@ Window {
         }
     }
     // !-------------------------------------------------
+
+    // Rectangle about this application
+    // --------------------------------------------------
+    Rectangle{
+        id: inforect
+        width: parent.width - 100
+        height: parent.height -100
+        anchors.centerIn: parent
+        border.color: "magenta"
+        color: "beige"
+        //visible: false
+
+        // Caption
+        Text {
+            id: caption
+            text: Qt.application.name
+            color: "blue"
+            font.pointSize: 14
+            font.letterSpacing: 2
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Grid{
+            id: infogrid
+            columns: 2
+            columnSpacing: 10
+            rows: 7
+            rowSpacing: 5
+            x: 10
+            anchors.top: caption.bottom
+            anchors.topMargin: 20
+            Text {
+                text: qsTr("App:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: Qt.application.name
+                font.pointSize: 12
+                color: "blue"
+            }
+            Text {
+                text: qsTr("Version:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: Qt.application.version
+                font.pointSize: 12
+                color: "blue"
+            }
+            Text {
+                text: qsTr("Developer:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: "Farschad Saberi"
+                font.pointSize: 12
+                color: "blue"
+            }
+            Text {
+                text: qsTr("IDE:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: "Qt 6 C++ and QML"
+                font.pointSize: 12
+                color: "blue"
+            }
+            Text {
+                text: qsTr("Licence:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: "GNU General Public License v3"
+                font.pointSize: 12
+                color: "blue"
+            }
+
+        }
+
+
+        Button{
+            text: "Close"
+            width: android ? 120 : 75
+            height: 30
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 5
+            onClicked: { inforect.visible = false   }
+        }
+    }
+
+    // !-------------------------------------------------
+
 
     Settings{
         id: settings
