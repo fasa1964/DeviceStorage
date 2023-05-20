@@ -760,7 +760,16 @@ Window {
         anchors.centerIn: parent
         border.color: "magenta"
         color: "beige"
-        //visible: false
+        visible: false
+
+        Image {
+            anchors.centerIn: parent
+            width: parent.width-100
+            fillMode: Image.PreserveAspectFit
+            source: "/png/storage"
+            opacity: 0.25
+        }
+
 
         // Caption
         Text {
@@ -834,18 +843,16 @@ Window {
 
         }
 
-
         Button{
             text: "Close"
             width: android ? 120 : 75
             height: 30
             anchors.right: parent.right
-            anchors.top: parent.top
+            anchors.bottom: parent.bottom
             anchors.margins: 5
             onClicked: { inforect.visible = false   }
         }
     }
-
     // !-------------------------------------------------
 
 
@@ -855,7 +862,6 @@ Window {
         property alias height: root.height
         property alias posx: root.x
         property alias posy: root.y
-
     }
 
 
