@@ -760,7 +760,7 @@ Window {
         anchors.centerIn: parent
         border.color: "magenta"
         color: "beige"
-        visible: false
+        visible: true
 
         Image {
             anchors.centerIn: parent
@@ -775,8 +775,10 @@ Window {
         Text {
             id: caption
             text: Qt.application.name
+            y:10
             color: "blue"
             font.pointSize: 14
+            font.bold: true
             font.letterSpacing: 2
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -840,6 +842,39 @@ Window {
                 font.pointSize: 12
                 color: "blue"
             }
+            Text {
+                text: qsTr("Platform:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: Qt.platform.os
+                font.pointSize: 12
+                color: "blue"
+            }
+            Text {
+                text: qsTr("SSL-Support:")
+                font.pointSize: 12
+                color: "gray"
+            }
+            Text {
+                text: network.sslSupport()
+                font.pointSize: 12
+                color: "blue"
+            }
+
+        }
+
+        Text{
+            id: infotext
+            x: 10
+            color: "#01579B"
+            width: parent.width - 20
+            font.pointSize: 12
+            anchors.top: infogrid.bottom
+            anchors.topMargin: 10
+            wrapMode: Text.WordWrap
+            text: device.aboutThisApplication()
 
         }
 

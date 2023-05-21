@@ -16,5 +16,6 @@
         <file>png/open.png</file>
         <file>png/search.png</file>
         <file>png/download.png</file>
+        <file>txt/info.txt</file>
     </qresource>
 </RCC>

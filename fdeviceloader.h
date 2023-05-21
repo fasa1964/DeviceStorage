@@ -30,6 +30,8 @@ public:
     Q_INVOKABLE QColor colorLighter(const QColor &color, int factor);
     Q_INVOKABLE QColor getOriginalColor();
 
+    Q_INVOKABLE QString aboutThisApplication();
+
     // Test with QStringList for Model in qml
     Q_INVOKABLE QList<QVariantMap> getModelMap();
 

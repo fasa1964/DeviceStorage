@@ -16,6 +16,7 @@ class FDeviceNetwork : public QObject
 public:
     explicit FDeviceNetwork(QObject *parent = nullptr);
     Q_INVOKABLE void tryNetwork();
+    Q_INVOKABLE bool sslSupport();
 
 signals:
     void networkError(const QString &errorText);

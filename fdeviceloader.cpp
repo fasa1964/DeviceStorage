@@ -105,6 +105,21 @@ QColor FDeviceLoader::getOriginalColor()
     return originalColor();
 }
 
+QString FDeviceLoader::aboutThisApplication()
+{
+
+    QFile file(":/txt/info.txt");
+    if(!file.open(QIODevice::ReadOnly)) {
+        emit errorOccurred(file.errorString());
+        return "";
+    }
+
+    QByteArray array =  file.readAll();
+    file.close();
+
+    return array;
+}
+
 
 QList<QVariantMap> FDeviceLoader::getModelMap()
 {

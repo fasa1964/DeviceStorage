@@ -1,5 +1,6 @@
 #include "fdevicenetwork.h"
 
+#include <QSslSocket>
 
 #include <QDebug>
 
@@ -31,6 +32,11 @@ void FDeviceNetwork::tryNetwork()
     // Connetct with authenticator
     //connect(manager, &QNetworkAccessManager::authenticationRequired, this, &FDeviceNetwork::networkAuthentification);
 
+}
+
+bool FDeviceNetwork::sslSupport()
+{
+    return QSslSocket::supportsSsl();
 }
 
 void FDeviceNetwork::replayFinished(QNetworkReply *reply)

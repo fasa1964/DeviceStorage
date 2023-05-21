@@ -1,0 +1,1 @@
+This is an application to demonstrate several things in Qt 6 like, Custom Type, DataStream, setting application icon in windows and android. Conversation between C++ and QML.
